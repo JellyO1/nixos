@@ -14,7 +14,6 @@
     "electron-33.4.11"
   ];
 
-
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -52,7 +51,10 @@
   services.xserver.enable = true;
 
   # Enable the KDE Plasma Desktop Environment.
-  services.displayManager.sddm.enable = true;
+  services.displayManager.sddm = {
+    enable = true;
+    theme = "sddm-astronaut-theme";
+  };
   services.desktopManager.plasma6.enable = true;
 
   # Configure keymap in X11
@@ -96,12 +98,10 @@
     isNormalUser = true;
     description = "Daniel Evangelista";
     extraGroups = [ "networkmanager" "wheel" "libvirtd" ];
-    packages = with pkgs; [
-      kdePackages.kate
-      thunderbird
-    ];
+    packages = with pkgs; [];
   };
-  users.defaultUserShell = pkgs.zsh;
+
+  #users.defaultUserShell = pkgs.zsh;
 
   # Install firefox.
   # programs.firefox.enable = true;
@@ -118,33 +118,16 @@
     capSysNice = true;
   };
 
-  programs.direnv.enable = true;
   programs.nano.nanorc = ''
     set tabstospaces
     set tabsize 2
   '';
 
-  # Zsh
-  programs.zsh = {
-    enable = true;
-    enableCompletion = true;
-    enableBashCompletion = true;
-    autosuggestions.enable = true;
-    syntaxHighlighting.enable = true;
-    ohMyZsh = {
-      enable = true;
-      plugins = ["git" "dirhistory" "history"];
-      theme = "robbyrussell";
-    };
-  };
-
   programs.dconf.enable = true;
 
   programs.ssh.startAgent = true;
 
-  #programs.zoom-us.enable = true;
-
-  environment.shells = with pkgs; [zsh];
+  #environment.shells = with pkgs; [zsh];
   
   # Hyprland
   programs.hyprland = {
@@ -164,46 +147,38 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    git
-    git-crypt
-    coreutils
-    devenv
-    # hyprland
-    kitty
-  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  #  wget
-
-    # Games
-    protonup-qt
-    mangohud
-    lutris
-    bottles
-    heroic    
-
-    rustdesk-flutter
-    code-cursor
-    libreoffice-qt6-fresh
+    # Dev
     go
     delve
-    spotify
+    coreutils
+    devenv
+    pciutils
+    
+    # hyprland
+    kitty
+
+    libreoffice-qt6-fresh
     gparted
-    discord
-    signal-desktop
     qemu
     quickemu
     openvpn3    
-    zoom-us
+    qalculate-qt
+    vlc
+    kdePackages.qtmultimedia
+    kdePackages.qtsvg
+    kdePackages.qtvirtualkeyboard
+    unrar
+
+    # Printer
     epson-escpr
     (epsonscan2.override {
       withNonFreePlugins = true;
     })
-    qalculate-qt
-    vlc
-    remmina
-    #kdePackages.kio-fuse # to mount remote filesystems via FUSE
-    #kdePackages.kio-extras # extra protocols support (sftp, fish and more)
 
     # theming
+    (sddm-astronaut.override {
+      embeddedTheme = "pixel_sakura";
+    })
     catppuccin-cursors.mochaSky
     (catppuccin-gtk.override { variant = "mocha"; accents = ["sky"]; })
     (catppuccin-kde.override { flavour = ["mocha"]; accents = ["sky"]; })
@@ -295,6 +270,7 @@
   #environment.loginShellInit = ''
   #  [[ "$(tty)" = "/dev/tty1" ]] && ./gs.sh
   #'';
+  environment.pathsToLink = [ "/share/zsh" ]; # required for zsh system packages completion
 
   # Input remapper
   services.input-remapper = {
@@ -316,7 +292,10 @@
   services.openssh.enable = true;
 
   # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
+  networking.firewall.allowedTCPPorts = [
+    5555 # scrcpy adb
+    24800 # InputLeap
+  ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
