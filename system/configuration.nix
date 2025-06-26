@@ -226,7 +226,12 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Virtualization
+  boot.kernelParams = [ "intel_iommu=on" "vfio-pci.ids=10de:10f1,10de:1c02" ];
+  # These modules are required for PCI passthrough, and must come before early modesetting stuff
+  boot.kernelModules = [ "vfio" "vfio_iommu_type1" "vfio_pci" "vfio_virqfd" ];
+
   programs.virt-manager.enable = true;
+  virtualisation.spiceUSBRedirection.enable = true;
   virtualisation.libvirtd = {
     enable = true;
     qemu = {
@@ -246,14 +251,12 @@
 
   xdg.portal = {
     enable = true;
+    xdgOpenUsePortal = true;
     extraPortals = with pkgs; [
       xdg-desktop-portal-gtk
       kdePackages.xdg-desktop-portal-kde
     ];
   };
-  
-  # Enable USB redirection
-  #virtualisation.spiceUSBRedirection.enable = true;
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
